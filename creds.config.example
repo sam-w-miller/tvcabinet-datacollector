@@ -1,1 +1,4 @@
 # Example credential file
+[Credentials]
+username = adafruitio_username
+key = adafruitio_key
