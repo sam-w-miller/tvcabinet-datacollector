@@ -2,3 +2,6 @@
 [Credentials]
 username = adafruitio_username
 key = adafruitio_key
+
+[Data_Location]
+directory = data

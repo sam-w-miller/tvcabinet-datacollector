@@ -2,27 +2,38 @@
 
 # Import configparser to read values from config file
 import configparser
+
 # Import Adafruit_IO to connect and access data
 from Adafruit_IO import *
 
 # Import datetime and dateutil so that we can convert from UTC to the appropriate value for the timezone
-from datetime import datetime
+from datetime import *
 from dateutil import tz
 
 # Import Pandas as we will store the data from Adafruit IO in a dataframe
 import pandas as pd
 
-# Read credential file
+# Import OS so that we can store results in a specific directory
+import os
+
+# Read credential information
 config = configparser.ConfigParser()
 config.read("creds.config")
-username = config['Credentials']['username']
-key = config['Credentials']['key']
+username = config["Credentials"]["username"]
+key = config["Credentials"]["key"]
+
+# Read the directory information
+data_dir = config["Data_Location"]["directory"]
 
 # Create an empty dataframe with column names
 df = pd.DataFrame(columns=["sensordate", "temperature", "pressure", "humidity", "luminance", "color-temperature"])
 
 # Create instance of the REST client
 afclient = Client(username,key)
+
+# Grab the current date and also calculate yesterday's date
+current_day = datetime.now()
+yesterday = current_day - timedelta(1)
 
 # Set the timezones we will use to convert from UTC to UK timezone
 from_tzone = tz.gettz("UTC")
@@ -62,13 +73,19 @@ def get_metric_data(metric_name, num_records):
 			new_row = {"sensordate": uk_time, metric_name: float(d.value)}
 			df.loc[len(df)] = new_row
 
+# Call the get_metric_data for each of the feeds
 get_metric_data("temperature", record_count)
 get_metric_data("pressure", record_count)
 get_metric_data("humidity", record_count)
 get_metric_data("luminance", record_count)
 get_metric_data("color-temperature", record_count)
 
-#df.to_csv("test.csv",index = False)
+# Build a data frame with all of the records from the previous day
+daydf = df[(df["sensordate"] > datetime.strftime(yesterday, "%Y-%m-%d")) & (df["sensordate"] < datetime.strftime(current_day, "%Y-%m-%d"))]
 
-daydf = df[(df["sensordate"] > "2024-04-19") & (df["sensordate"] < "2024-04-20")]
-print(daydf)
+# Check to see if we have the directory to store the data files
+if not os.path.exists(data_dir):
+	os.makedirs(data_dir)
+
+# Save the data to a CSV file
+daydf.to_csv(data_dir + "/" + datetime.strftime(yesterday, "%Y-%m-%d") + ".csv", index = False)

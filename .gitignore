@@ -1,2 +1,4 @@
 # Ignore config file
 *.config
+*.csv
+/data
