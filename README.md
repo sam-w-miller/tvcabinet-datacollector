@@ -12,6 +12,8 @@ These libraries are used in the project:
 - **Adafruit_IO** to connect to Adafruit IO and read the data, see [here](https://learn.adafruit.com/welcome-to-adafruit-io/python-and-adafruit-io).
 - **datetime** and **dateutil** to create and manipulate dates.
 - **pandas** to create a dataframe to store the data as it is read and output to csv file.
+- **os** to create a data folder if needed
+- **logging** to log information if needed
 
 ## Program Files
 - **creds.config** holds the various configuration parameters, see creds.config.example.
