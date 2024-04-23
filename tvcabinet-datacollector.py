@@ -16,6 +16,13 @@ import pandas as pd
 # Import OS so that we can store results in a specific directory
 import os
 
+# import logging so that we can check for erros
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename="tvcabinet-datacollector.log", encoding="utf-8", format="%(asctime)s %(message)s", level=logging.DEBUG)
+logger.debug("Starting tvcabinent-datacollector.py")
+
 # Read credential information
 config = configparser.ConfigParser()
 config.read("creds.config")
@@ -42,8 +49,12 @@ to_tzone = tz.gettz("Europe/London")
 # Set how many records we will receive for each metric
 record_count = 200
 
+logger.debug("All parameters set")
+
 # This function will gather the data for a specific feed/metric for a specified number of records
 def get_metric_data(metric_name, num_records):
+
+	logger.debug("Getting data for feed " + metric_name)
 
 	# Establish a connection to the Adafruit IO Feed for the metric
 	try:
@@ -80,12 +91,16 @@ get_metric_data("humidity", record_count)
 get_metric_data("luminance", record_count)
 get_metric_data("color-temperature", record_count)
 
+logger.debug("Getting data for yesterday")
+
 # Build a data frame with all of the records from the previous day
 daydf = df[(df["sensordate"] > datetime.strftime(yesterday, "%Y-%m-%d")) & (df["sensordate"] < datetime.strftime(current_day, "%Y-%m-%d"))]
 
 # Check to see if we have the directory to store the data files
 if not os.path.exists(data_dir):
 	os.makedirs(data_dir)
+
+logger.debug("Saving file")
 
 # Save the data to a CSV file
 daydf.to_csv(data_dir + "/" + datetime.strftime(yesterday, "%Y-%m-%d") + ".csv", index = False)
